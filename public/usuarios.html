@@ -1,0 +1,298 @@
+<script type="text/javascript"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="https://npmcdn.com/js-alert/dist/jsalert.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script src="bootbox.min.js"></script>
+
+
+
+
+
+
+ 
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.2.3/css/bulma.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+ 
+
+
+
+
+<div class="container">
+	<div class="row centered-form">
+	
+			
+
+							
+
+				
+			
+		
+
+		<div
+			class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-2">
+
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Administraci&oacute;n de Giros</h3>
+				</div>
+			</div>
+
+			<a href="#aModal"  class="btn btn-large btn-primary" data-toggle="modal">Agregar</a>
+  
+			<div id="aModal" class="modal fade">
+			   <div class="modal-dialog">
+				   <div class="modal-content">
+					   <div class="modal-header">
+						   <h4 class="modal-title">Registro de Giros</h4>
+					   </div>
+					   <div class="modal-body">
+						   <div class="panel-body">
+							   <form id="frmugiro" role="form">
+
+
+								   <div class="form-group">
+									   <input type="text" name="clave" id="clave"
+										   class="form-control input-sm" placeholder="Clave">
+								   </div>
+								   
+								   <div class="form-group">
+									   <input type="text" name="descripcion" id="descripcion"
+										   class="form-control input-sm" placeholder="descripcion">
+								   </div>
+
+								   <input type="submit" value="Registrar"
+									   class="btn btn-info btn-block">
+
+							   </form>
+						   </div>
+					   </div>
+					   <div class="modal-footer">
+						   <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+					   </div>
+				   </div>
+			   </div>
+		   </div>
+
+		   <div id="aModalb" class="modal fade">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Registro de Giros</h4>
+					</div>
+					<div class="modal-body">
+						<div class="panel-body">
+							<form id="frmugiroeditar" role="form">
+
+
+								<div class="form-group">
+									<input type="text" name="clavee" id="clavee"
+										class="form-control input-sm" placeholder="Clave">
+								</div>
+								
+								<div class="form-group">
+									<input type="text" name="descripcione" id="descripcione"
+										class="form-control input-sm" placeholder="descripcione">
+								</div>
+
+								<input type="submit" value="Editar"
+									class="btn btn-info btn-block">
+
+							</form>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+			<table class="table table-striped custab">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Clave</th>
+						<th>Descripcion</th>
+						<th class="text-center">Acci&oacute;n</th>
+					</tr>
+				</thead>
+				<tbody id="listabody">
+					
+				
+			</table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	function listaUsuarios() {
+		$
+				.post("http://localhost:56147/cupones_durango/cdgo/Giros/listaGiros", "json")
+				.done(
+						function(data) {
+							$("#listabody").html("");
+							for (i = 0; i < data.length; i++) {
+								o = data[i];
+								tr = "<tr id='"+o.id+"'><td>"
+										+ o.id
+										+ "</td><td>"
+										+ o.clave
+										+ "</td><td>"
+										+ o.descripcion
+										+ "</td><td class=\"text-center\">	<a href=\"#aModalb\"  class=\"btn btn-large btn-primary edit\" data-toggle=\"modal\">Editar</a> <a href=\"#\" class=\"btn btn-danger btn-xs eliminar\"><span class=\"fas fa-trash-alt\"></span> Borrar</a></td></tr>";
+								$("#listabody").append(tr);
+							}
+						});
+	}
+
+	$(document).on("submit", "#frmugiro", function(evt) {
+		evt.preventDefault();
+	
+	 
+			u = $("#clave").val();
+			p = $("#descripcion").val();
+ 			data = {
+				"clave" : u,
+                "descripcion" : p
+			};
+
+			$.ajax({
+				url : "http://localhost:56147/cupones_durango/cdgo/Giros/addGiro/",
+				type : "POST",
+				cache : false,
+				contentType : 'application/json',
+				dataType : "json",
+				processData : false,
+				data : JSON.stringify(data),
+			}).done(function(data) {
+				if (data.codigo == "OK") {
+					$("#frmugiro").trigger("reset");
+					listaUsuarios();
+				}
+				listaUsuarios();
+				$('#aModal').modal('hide');
+				$("#frmugiro").trigger("reset");
+
+				//bootbox.alert(data.mensaje);
+			});
+		 
+	});
+
+
+	$(document).on("submit", "#frmugiroeditar", function(evt) {
+		miid = $(this).parent().parent().attr("id");
+		u = $("#clavee").val();
+		p = $("#descripcione").val();
+ 			data = {
+				"id": datosN.id,
+				"clave" : u,
+                "descripcion" : p
+			};
+
+			$.ajax({
+				url : "http://localhost:56147/cupones_durango/cdgo/Giros/editarGiro/",
+				type : "POST",
+				cache : false,
+				contentType : 'application/json',
+				dataType : "json",
+				processData : false,
+				data : JSON.stringify(data),
+			}).done(function(data) {
+		
+				listaUsuarios();
+				$('#aModalb').modal('hide');
+				$("#frmugiroeditar").trigger("reset");
+
+				//bootbox.alert(data.mensaje);
+			});
+	
+		
+		 
+	});
+	var datosN;
+	$(document).on(
+			"click",
+			".edit",
+			function() {
+				miid = $(this).parent().parent().attr("id");
+				 $.ajax(
+											{
+												type : "POST",
+												url : "http://localhost:56147/cupones_durango/cdgo/Giros/consultaGiro/"
+														+ miid,
+												cache : false,
+												contentType : 'application/json',
+												dataType : "json",
+												processData : false
+											})
+									.done(
+											function(data) {
+												$("#clavee").val(data.clave);
+												$("#descripcione").val(data.descripcion);
+												datosN = data;
+
+
+												listaUsuarios();
+												 
+													
+											})
+
+			});
+
+	$(document).on(
+			"click",
+			".editar",
+			function() {
+				$.post(
+						"Banorte/LoginService/reset/"
+								+ $(this).parent().parent().attr("id"), "json")
+						.done(function(data) {
+							if (data.codigo == "OK") {
+								$("form").trigger("reset");
+							}
+							bootbox.alert(data.mensaje);
+						});
+			});
+
+	$(document)
+			.on(
+					"click",
+					".eliminar",
+					function() {
+						miid = $(this).parent().parent().attr("id");
+						var alert = new JSAlert("¿Estas seguro de eliminar este giro?", "Mensaje");
+							alert.addButton("Yes").then(function() {
+								$.ajax(
+											{
+												type : "DELETE",
+												url : "http://localhost:56147/cupones_durango/cdgo/Giros/deleteGiro/"
+														+ miid,
+												cache : false,
+												contentType : 'application/json',
+												dataType : "json",
+												processData : false
+											})
+									.done(
+											function(data) {
+												listaUsuarios();
+												 
+													
+											})
+							});
+							alert.addButton("No").then(function() {
+								console.log("Alert button No pressed");
+							});
+							alert.show();
+
+					
+					});
+	listaUsuarios();
+	$("#miModal").modal("show");
+
+</script>

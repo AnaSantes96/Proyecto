@@ -1,84 +1,23 @@
-'use strict'
 
-const Hapi = require('hapi');
-const Request = require('request');
-const Vision = require('vision');
-const Handlebars = require('handlebars');
-const LodashFilter = require('lodash.filter');
-const LodashTake = require('lodash.take');
+var express = require('express'); // Get the module
+var app = express(); // Create express by calling the prototype in var express
+const port = 3000;
+app.use('/views', express.static('views'));
+app.listen(port, () => console.log(`Listening on port ${port}`));
+app.route({
+    method: 'GET',
+    path: '/views',
+    handler: function (request, reply) {
+        Request.get('http://192.168.1.153:56147/cupones_durango/cdgo/Giros/listaGiros', function (error, response, body) {
+            if (error) {
+                throw error;
+            }
 
-const server = new Hapi.Server();
-
-server.connection({
-	host: '127.0.0.1',
-	port: 3000
+            const data = JSON.parse(body);
+            console.log(data);
+            reply.view('index.html', { result: data });
+        });
+    }
 });
 
-// Register vision for our views
-server.register(Vision, (err) => {
-	server.views({
-		engines: {
-			html: Handlebars
-		},
-		relativeTo: __dirname,
-		path: './views',
-	});
-});
-
-// Show teams standings
-server.route({
-	method: 'GET',
-	path: '/',
-	handler: function (request, reply) {
-		Request.get('http://api.football-data.org/v1/competitions/438/leagueTable', function (error, response, body) {
-			if (error) {
-				throw error;
-			}
-
-			const data = JSON.parse(body);
-			reply.view('index', { result: data });
-		});
-	}
-});
-
-// Show a particular team
-server.route({
-	method: 'GET',
-	path: '/teams/{id}',
-	handler: function (request, reply) {
-		const teamID = encodeURIComponent(request.params.id);
-
-		Request.get(`http://api.football-data.org/v1/teams/${teamID}`, function (error, response, body) {
-			if (error) {
-				throw error;
-			}
-
-			const result = JSON.parse(body);
-
-			Request.get(`http://api.football-data.org/v1/teams/${teamID}/fixtures`, function (error, response, body) {
-				if (error) {
-					throw error;
-				}
-
-				const fixtures = LodashTake(LodashFilter(JSON.parse(body).fixtures, function (match) {
-					return match.status === 'SCHEDULED';
-				}), 5);
-
-				reply.view('team', { result: result, fixtures: fixtures });
-			});
-		});
-	}
-});
-
-// A simple helper function that extracts team ID from team URL
-Handlebars.registerHelper('teamID', function (teamUrl) {
-	return teamUrl.slice(38);
-});
-
-server.start((err) => {
-	if (err) {
-		throw err;
-	}
-
-	console.log(`Server running at: ${server.info.uri}`);
-});
+ 
